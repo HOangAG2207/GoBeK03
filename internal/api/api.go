@@ -6,6 +6,9 @@ import (
 	"net/http"
 
 	"github.com/HOangAG2207/GoBeK03/internal/config"
+	handler "github.com/HOangAG2207/GoBeK03/internal/handler/health"
+	repository "github.com/HOangAG2207/GoBeK03/internal/repository/health"
+	service "github.com/HOangAG2207/GoBeK03/internal/service/health"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -46,6 +49,13 @@ func NewEngine(opts *EngineOpts) Engine {
 // Init Routes
 func (e *engine) InitRoutes() {
 
+	//health-check
+	checkHealthRepo := repository.NewHealth()
+	checkHealthService := service.NewHealth(checkHealthRepo, e.config.ServiceName, e.config.InstanceID)
+	checkHealthHandler := handler.NewHealth(checkHealthService)
+
+	apiGroup := e.app.Group("/api")
+	apiGroup.GET("/health-check", checkHealthHandler.CheckHealth)
 }
 
 // Start runs the HTTP server

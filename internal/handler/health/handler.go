@@ -6,7 +6,7 @@ import (
 )
 
 type Health interface {
-	CheckHealth(ctx echo.Context)
+	CheckHealth(ctx echo.Context) error
 }
 type healthHandler struct {
 	service service.Health

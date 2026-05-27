@@ -6,15 +6,15 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *healthHandler) CheckHealth(ctx echo.Context) {
+func (h *healthHandler) CheckHealth(ctx echo.Context) error {
 	res, err := h.service.CheckHealth()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"error": "Internal Server Error!",
 		})
-		return
+		return err
 
 	}
 
-	ctx.JSON(http.StatusOK, res)
+	return ctx.JSON(http.StatusOK, res)
 }
