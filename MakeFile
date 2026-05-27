@@ -27,6 +27,15 @@ help:
 	@echo "  folder=<pkg>               Package path (supports ...)"
 	@echo "                           Ex: ./internal/service/..."
 	@echo ""
+	@echo "make test-endpoint    Run a specific endpoint test"
+	@echo "  t=<name>               Test name (regex match with -run)"
+	@echo "                         Ex: TestHealthCheck"
+	@echo ""
+	@echo "make test-coverage  Run full test coverage report"
+	@echo "                         Generates HTML report + check threshold"
+	@echo "  COVERAGE_THRESHOLD     Minimum coverage required (e.g. 70)"
+	@echo "
+	@echo ""
 	@echo "make mock-one              Generate mocks in a specific package"
 	@echo "  folder=<pkg>             Package interface"
 	@echo "                           Ex: ./internal/service"
@@ -63,7 +72,39 @@ ifndef folder
 	$(error ❌ Missing package path: use folder=./internal/...)
 endif
 	$(GO_TEST) $(GO_TEST_ARGS) $(folder)
+# ========================
+# Endpoint tests
+# ========================
 
+PATH_TEST_ENDPOINT := ./internal/test/integration
+
+# Run single endpoint test
+# Usage: make test-endpoint-one t=<name>
+test-endpoint:
+ifndef t
+	$(error ❌ Missing test name: use t=<TestName>)
+endif
+	$(GO_TEST) $(GO_TEST_ARGS) -run $(t) $(PATH_TEST_ENDPOINT)
+	# ========================
+# Coverage
+# ========================
+
+COVERAGE_TMP := coverage.tmp
+COVERAGE_OUT := coverage.out
+COVERAGE_HTML := coverage.html
+COVERAGE_THRESHOLD = 80
+
+test-coverage:
+	go test ./... -coverprofile=$(COVERAGE_TMP) -covermode=atomic -coverpkg=./... -p 1
+	go run filter_coverage.go
+	go tool cover -html=$(COVERAGE_OUT) -o $(COVERAGE_HTML)
+	@total=$$(go tool cover -func=$(COVERAGE_OUT) | grep total: | awk '{print $$3}' | sed 's/%//'); \
+	if [ $$(echo "$$total < $(COVERAGE_THRESHOLD)" | bc -l) -eq 1 ]; then \
+		echo "❌ Coverage ($$total%) is below threshold ($(COVERAGE_THRESHOLD)%)"; \
+		exit 1; \
+	else \
+		echo "✅ Coverage ($$total%) meets threshold ($(COVERAGE_THRESHOLD)%)"; \
+	fi
 # ========================
 # Mock generation
 # ========================
