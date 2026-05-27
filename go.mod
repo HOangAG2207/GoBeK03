@@ -3,6 +3,7 @@ module github.com/HOangAG2207/GoBeK03
 go 1.25.1
 
 require (
+	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/labstack/echo/v4 v4.15.2
