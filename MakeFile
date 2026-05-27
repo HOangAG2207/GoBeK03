@@ -17,8 +17,64 @@ help:
 	@echo "-------                     -----------"
 	@echo "make run                   Run the API server"
 	@echo ""
+	@echo "make test-unit-one         Run a specific test function"
+	@echo "  t=<name>                 Test name (regex match with -run)"
+	@echo "                           Ex: TestGeneratePassword"
+	@echo "  folder=<pkg>               Package path"
+	@echo "                           Ex: ./internal/service"
+	@echo ""
+	@echo "make test-unit-all         Run all tests in a package"
+	@echo "  folder=<pkg>               Package path (supports ...)"
+	@echo "                           Ex: ./internal/service/..."
+	@echo ""
+	@echo "make mock-one              Generate mocks in a specific package"
+	@echo "  folder=<pkg>             Package interface"
+	@echo "                           Ex: ./internal/service"
+	@echo ""
+	@echo "make mock-all              Generate all mocks (go generate ./...)"
+	@echo ""
 # ========================
 # Run app
 # ========================
 run:
 	$(GO) run ./cmd/api/main.go
+
+# ========================
+# Unit tests
+# ========================
+
+# Run single test function
+test-unit-one:
+ifndef t
+	$(error ❌ Missing test name: use t=<NameOfTest>)
+endif
+ifndef folder
+	$(error ❌ Missing package path: use folder=./internal/...)
+endif
+	$(GO_TEST) $(GO_TEST_ARGS) -run $(t) $(folder)
+
+# Run all tests in a package
+test-unit-all:
+ifndef folder
+	$(error ❌ Missing package path: use folder=./internal/...)
+endif
+	$(GO_TEST) $(GO_TEST_ARGS) $(folder)
+
+# ========================
+# Mock generation
+# ========================
+
+# Generate mock trong 1 package cụ thể
+# Usage: make mock-one folder=./internal/service
+mock-one:
+ifndef folder
+	$(error ❌ Missing folder: use folder=./internal/...)
+endif
+	@echo "→ Generating mocks in $(folder)..."
+	cd $(folder) && go generate ./...
+
+# Generate toàn bộ mock trong project
+# Usage: make mock-all
+mock-all:
+	@echo "→ Generating all mocks..."
+	go generate ./...
