@@ -36,7 +36,7 @@ help:
 # ========================
 # Run app
 # ========================
-run:
+run:swagger
 	$(GO) run ./cmd/api/main.go
 # ========================
 # Run app

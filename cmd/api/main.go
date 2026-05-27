@@ -7,6 +7,11 @@ import (
 	"github.com/HOangAG2207/GoBeK03/internal/config"
 )
 
+// @title           GoBe K03 project API
+// @version         1.0
+// @description     API for GoBe K03
+// @host            localhost:8080
+// @BasePath 		/api
 func main() {
 	cfg, err := config.NewConfig() // load config first
 	if err != nil {

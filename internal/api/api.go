@@ -5,12 +5,14 @@ import (
 	"log"
 	"net/http"
 
+	_ "github.com/HOangAG2207/GoBeK03/docs"
 	"github.com/HOangAG2207/GoBeK03/internal/config"
 	handler "github.com/HOangAG2207/GoBeK03/internal/handler/health"
 	repository "github.com/HOangAG2207/GoBeK03/internal/repository/health"
 	service "github.com/HOangAG2207/GoBeK03/internal/service/health"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 type Engine interface {
@@ -54,7 +56,13 @@ func (e *engine) InitRoutes() {
 	checkHealthService := service.NewHealth(checkHealthRepo, e.config.ServiceName, e.config.InstanceID)
 	checkHealthHandler := handler.NewHealth(checkHealthService)
 
+	e.app.GET("/", func(c echo.Context) error {
+		return c.Redirect(http.StatusMovedPermanently, "/api/docs/index.html")
+	})
+
 	apiGroup := e.app.Group("/api")
+	apiGroup.GET("/docs/*", echoSwagger.WrapHandler)
+
 	apiGroup.GET("/health-check", checkHealthHandler.CheckHealth)
 }
 
