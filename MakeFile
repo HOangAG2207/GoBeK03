@@ -1,0 +1,24 @@
+.PHONY: run
+
+# ========================
+# Variables
+# ========================
+GO := go
+GO_TEST := $(GO) test
+GO_TEST_ARGS := -v -cover
+
+# ========================
+# Help
+# ========================
+help:
+	@echo "Available commands:"
+	@echo ""
+	@echo "COMMAND                     DESCRIPTION"
+	@echo "-------                     -----------"
+	@echo "make run                   Run the API server"
+	@echo ""
+# ========================
+# Run app
+# ========================
+run:
+	$(GO) run ./cmd/api/main.go
