@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/HOangAG2207/GoBeK03/internal/model"
+	"github.com/HOangAG2207/GoBeK03/internal/utils"
 )
 
 func (s *healthService) CheckHealth() (*model.Health, error) {
@@ -11,7 +12,7 @@ func (s *healthService) CheckHealth() (*model.Health, error) {
 	}
 	id := s.instanceId
 	if id == "" {
-		id = s.uuidGen.Generate()
+		id = utils.UuidGenerator()
 	}
 
 	return &model.Health{

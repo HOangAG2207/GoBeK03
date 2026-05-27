@@ -1,25 +1,25 @@
 package service
 
 import (
+	"github.com/HOangAG2207/GoBeK03/internal/model"
 	repository "github.com/HOangAG2207/GoBeK03/internal/repository/health"
-	pkg_uuid "github.com/HOangAG2207/GoBeK03/pkg/uuid"
 )
 
+//go:generate mockery --name Health --filename check_health_mock.go --output ./mocks
 type Health interface {
+	CheckHealth() (*model.Health, error)
 }
 
 type healthService struct {
 	repo        repository.Health
 	serviceName string
 	instanceId  string
-	uuidGen     pkg_uuid.Generator
 }
 
-func NewHealth(repo repository.Health, serviceName, instanceId string, uuidGen pkg_uuid.Generator) Health {
+func NewHealth(repo repository.Health, serviceName, instanceId string) Health {
 	return &healthService{
 		repo:        repo,
 		serviceName: serviceName,
 		instanceId:  instanceId,
-		uuidGen:     uuidGen,
 	}
 }
