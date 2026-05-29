@@ -1,4 +1,4 @@
-package config
+package api
 
 import (
 	"log"
@@ -8,8 +8,8 @@ import (
 )
 
 type Config struct {
-	AppPort     string `envconfig:"APP_PORT" default:"8081"`
-	ServiceName string `envconfig:"APP_SERVICE_NAME" default:"GoBe-K03-echo"`
+	AppPort     string `envconfig:"PORT" default:"8081"`
+	ServiceName string `envconfig:"SERVICE_NAME" default:"GoBe-K03"`
 	InstanceID  string `envconfig:"INSTANCE_ID" default:""`
 }
 
@@ -19,7 +19,7 @@ func NewConfig() (*Config, error) {
 		log.Println(".env not found")
 	}
 	var cfg Config
-	if err := envconfig.Process("api", &cfg); err != nil {
+	if err := envconfig.Process("APP", &cfg); err != nil {
 		return nil, err
 	}
 	return &cfg, nil

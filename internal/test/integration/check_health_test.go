@@ -7,33 +7,27 @@ import (
 	"testing"
 
 	"github.com/HOangAG2207/GoBeK03/internal/api"
-	"github.com/HOangAG2207/GoBeK03/internal/config"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestEndpoint_CheckHealth(t *testing.T) {
 	t.Parallel()
 
-	cfg := &config.Config{
+	cfg := &api.Config{
 		ServiceName: "test-service",
 		InstanceID:  "test-instance",
 		AppPort:     "8080",
 	}
 
 	testCases := []struct {
-		name string
-
-		setupTestHTTP func() *httptest.ResponseRecorder
-
-		expectedStatusCode int
+		name                 string
+		setupTestHTTP        func(api api.Engine) *httptest.ResponseRecorder
+		expectedStatusCode   int
+		expectedResponseBody string
 	}{
 		{
 			name: "health_check_success",
-			setupTestHTTP: func() *httptest.ResponseRecorder {
-				engine := api.NewEngine(&api.EngineOpts{
-					Cfg: cfg,
-				})
-
+			setupTestHTTP: func(engine api.Engine) *httptest.ResponseRecorder {
 				req := httptest.NewRequest(http.MethodGet, "/api/health-check", nil)
 				rec := httptest.NewRecorder()
 
@@ -42,6 +36,11 @@ func TestEndpoint_CheckHealth(t *testing.T) {
 				return rec
 			},
 			expectedStatusCode: http.StatusOK,
+			expectedResponseBody: `{
+				"message": "OK",
+				"service_name": "test-service",
+				"instance_id": "test-instance"
+			}`,
 		},
 	}
 
@@ -51,20 +50,27 @@ func TestEndpoint_CheckHealth(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			rec := tc.setupTestHTTP()
+			engine := api.NewEngine(&api.EngineOpts{
+				Cfg: cfg,
+			})
 
-			// ✅ Check status code
+			rec := tc.setupTestHTTP(engine)
+
+			// ✅ Status code
 			assert.Equal(t, tc.expectedStatusCode, rec.Code)
 
-			// ✅ Parse JSON response (best practice)
-			var resp map[string]interface{}
-			err := json.Unmarshal(rec.Body.Bytes(), &resp)
+			// ✅ Convert actual response -> map
+			var actual map[string]interface{}
+			err := json.Unmarshal(rec.Body.Bytes(), &actual)
 			assert.NoError(t, err)
 
-			// ✅ Assert đúng theo json tag
-			assert.Equal(t, "OK", resp["message"])
-			assert.Equal(t, "test-service", resp["service_name"])
-			assert.Equal(t, "test-instance", resp["instance_id"])
+			// ✅ Convert expected string -> map
+			var expected map[string]interface{}
+			err = json.Unmarshal([]byte(tc.expectedResponseBody), &expected)
+			assert.NoError(t, err)
+
+			// ✅ Compare JSON logically
+			assert.Equal(t, expected, actual)
 		})
 	}
 }

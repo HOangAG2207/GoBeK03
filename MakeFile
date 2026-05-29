@@ -1,4 +1,4 @@
-.PHONY: run
+.PHONY: run swagger test-unit-one test-unit-all test-endpoint test-coverage mock-one mock-all
 
 # ========================
 # Variables
@@ -34,7 +34,6 @@ help:
 	@echo "make test-coverage  Run full test coverage report"
 	@echo "                         Generates HTML report + check threshold"
 	@echo "  COVERAGE_THRESHOLD     Minimum coverage required (e.g. 70)"
-	@echo "
 	@echo ""
 	@echo "make mock-one              Generate mocks in a specific package"
 	@echo "  folder=<pkg>             Package interface"
