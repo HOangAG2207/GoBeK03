@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"github.com/HOangAG2207/GoBeK03/internal/api"
-	"github.com/HOangAG2207/GoBeK03/internal/config"
 )
 
 // @title           GoBe K03 project API
@@ -13,7 +12,7 @@ import (
 // @host            localhost:8080
 // @BasePath 		/api
 func main() {
-	cfg, err := config.NewConfig() // load config first
+	cfg, err := api.NewConfig() // load config first
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}

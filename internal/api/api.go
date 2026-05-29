@@ -6,12 +6,15 @@ import (
 	"net/http"
 
 	_ "github.com/HOangAG2207/GoBeK03/docs"
-	"github.com/HOangAG2207/GoBeK03/internal/config"
 	handler "github.com/HOangAG2207/GoBeK03/internal/handler/health"
+	urlHandler "github.com/HOangAG2207/GoBeK03/internal/handler/url"
 	repository "github.com/HOangAG2207/GoBeK03/internal/repository/health"
+	urlRepo "github.com/HOangAG2207/GoBeK03/internal/repository/url"
 	service "github.com/HOangAG2207/GoBeK03/internal/service/health"
+	urlService "github.com/HOangAG2207/GoBeK03/internal/service/url"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/redis/go-redis/v9"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
@@ -20,18 +23,21 @@ type Engine interface {
 	ServeHTTP(w http.ResponseWriter, r *http.Request)
 }
 type engine struct {
-	app    *echo.Echo
-	config *config.Config
+	app         *echo.Echo
+	config      *Config
+	redisClient *redis.Client
 }
 
 type EngineOpts struct {
-	Cfg *config.Config
+	Cfg         *Config
+	RedisClient *redis.Client
 }
 
 func NewEngine(opts *EngineOpts) Engine {
 	e := &engine{
-		app:    echo.New(),
-		config: opts.Cfg,
+		app:         echo.New(),
+		config:      opts.Cfg,
+		redisClient: opts.RedisClient,
 	}
 	e.app.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -56,6 +62,11 @@ func (e *engine) InitRoutes() {
 	checkHealthService := service.NewHealth(checkHealthRepo, e.config.ServiceName, e.config.InstanceID)
 	checkHealthHandler := handler.NewHealth(checkHealthService)
 
+	//shorten-url
+	shortenUrlRepo := urlRepo.NewUrlRepository(e.redisClient, 0)
+	shortenUrlService := urlService.NewUrlService(shortenUrlRepo, 0)
+	shortenUrlHandler := urlHandler.NewUrlHandler(shortenUrlService)
+
 	e.app.GET("/", func(c echo.Context) error {
 		return c.Redirect(http.StatusMovedPermanently, "/api/docs/index.html")
 	})
@@ -64,6 +75,7 @@ func (e *engine) InitRoutes() {
 	apiGroup.GET("/docs/*", echoSwagger.WrapHandler)
 
 	apiGroup.GET("/health-check", checkHealthHandler.CheckHealth)
+	apiGroup.POST("/url/shorten", shortenUrlHandler.ShortenURL)
 }
 
 // Start runs the HTTP server
