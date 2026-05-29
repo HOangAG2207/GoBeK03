@@ -43,6 +43,52 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/url/shorten": {
+            "post": {
+                "description": "Generate a shortened URL code from a given URL",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "url"
+                ],
+                "summary": "Shorten a URL",
+                "parameters": [
+                    {
+                        "description": "URL to shorten",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/url.shortenURLRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/url.shortenURLResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/url.shortenURLResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/url.shortenURLResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -56,6 +102,26 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "service_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "url.shortenURLRequest": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "example": "https://www.google.com"
+                }
+            }
+        },
+        "url.shortenURLResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
                     "type": "string"
                 }
             }

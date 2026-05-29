@@ -8,13 +8,16 @@ import (
 )
 
 const (
-	maxRetryAttempts = 10
+	defaultUrlLengthCode = 7
+	maxRetryAttempts     = 10
 )
 
 var (
 	ErrCodeNotFound       = errors.New("shortened URL not found")
 	ErrMaxRetriesExceeded = errors.New("maximum retry attempts exceeded for generating unique URL code")
 )
+
+//go:generate mockery --name UrlService --filename url_service_mock.go --output ./mocks
 
 type UrlService interface {
 	ShortenURL(ctx context.Context, url string) (string, error)
@@ -26,7 +29,7 @@ type urlService struct {
 
 func NewUrlService(repo url.UrlRepository, urlLengthCode int) UrlService {
 	if urlLengthCode == 0 {
-		urlLengthCode = 10
+		urlLengthCode = defaultUrlLengthCode
 	}
 	return &urlService{
 		repo:          repo,

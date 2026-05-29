@@ -9,6 +9,19 @@ definitions:
       service_name:
         type: string
     type: object
+  url.shortenURLRequest:
+    properties:
+      url:
+        example: https://www.google.com
+        type: string
+    type: object
+  url.shortenURLResponse:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -35,4 +48,34 @@ paths:
       summary: Check health
       tags:
       - health
+  /url/shorten:
+    post:
+      consumes:
+      - application/json
+      description: Generate a shortened URL code from a given URL
+      parameters:
+      - description: URL to shorten
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/url.shortenURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/url.shortenURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/url.shortenURLResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/url.shortenURLResponse'
+      summary: Shorten a URL
+      tags:
+      - url
 swagger: "2.0"
