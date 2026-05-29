@@ -108,6 +108,9 @@ const docTemplate = `{
         },
         "url.shortenURLRequest": {
             "type": "object",
+            "required": [
+                "url"
+            ],
             "properties": {
                 "url": {
                     "type": "string",

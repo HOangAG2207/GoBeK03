@@ -8,12 +8,11 @@ import (
 )
 
 type shortenURLRequest struct {
-	URL string `json:"url" example:"https://www.google.com"`
-	// ExpireIn int    `json:"exp" binding:"required,lte=604800" example:"10000"`
+	URL string `json:"url" validate:"required,url" example:"https://www.google.com"`
 }
 
 type shortenURLResponse struct {
-	Code    string `json:"code,omitempty"`
+	Code    string `json:"code"`
 	Message string `json:"message"`
 }
 
@@ -44,8 +43,8 @@ func (h *urlHandler) ShortenURL(ctx echo.Context) error {
 			Msg("service return error when shorten url")
 
 		return ctx.JSON(http.StatusInternalServerError, shortenURLResponse{
-			// Message: InternalServerError.Error(),
-			Message: err.Error(),
+			Message: InternalServerError.Error(),
+			// Message: err.Error(),
 		})
 	}
 
