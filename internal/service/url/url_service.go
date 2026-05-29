@@ -1,6 +1,7 @@
 package url
 
 import (
+	"context"
 	"errors"
 
 	"github.com/HOangAG2207/GoBeK03/internal/repository/url"
@@ -16,6 +17,7 @@ var (
 )
 
 type UrlService interface {
+	ShortenURL(ctx context.Context, url string) (string, error)
 }
 type urlService struct {
 	repo          url.UrlRepository
