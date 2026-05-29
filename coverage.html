@@ -59,15 +59,29 @@
 				
 				<option value="file1">github.com/HOangAG2207/GoBeK03/internal/handler/health/handler.go (100.0%)</option>
 				
-				<option value="file2">github.com/HOangAG2207/GoBeK03/internal/repository/health/ping.go (100.0%)</option>
+				<option value="file2">github.com/HOangAG2207/GoBeK03/internal/handler/url/handler.go (100.0%)</option>
 				
-				<option value="file3">github.com/HOangAG2207/GoBeK03/internal/repository/health/repository.go (100.0%)</option>
+				<option value="file3">github.com/HOangAG2207/GoBeK03/internal/handler/url/shorten_url.go (100.0%)</option>
 				
-				<option value="file4">github.com/HOangAG2207/GoBeK03/internal/service/health/check_health.go (100.0%)</option>
+				<option value="file4">github.com/HOangAG2207/GoBeK03/internal/repository/health/ping.go (100.0%)</option>
 				
-				<option value="file5">github.com/HOangAG2207/GoBeK03/internal/service/health/service.go (100.0%)</option>
+				<option value="file5">github.com/HOangAG2207/GoBeK03/internal/repository/health/repository.go (100.0%)</option>
 				
-				<option value="file6">github.com/HOangAG2207/GoBeK03/internal/utils/uuid_generation.go (100.0%)</option>
+				<option value="file6">github.com/HOangAG2207/GoBeK03/internal/repository/url/get_url.go (100.0%)</option>
+				
+				<option value="file7">github.com/HOangAG2207/GoBeK03/internal/repository/url/repository.go (100.0%)</option>
+				
+				<option value="file8">github.com/HOangAG2207/GoBeK03/internal/repository/url/store_url.go (100.0%)</option>
+				
+				<option value="file9">github.com/HOangAG2207/GoBeK03/internal/repository/url/store_url_if_absent.go (100.0%)</option>
+				
+				<option value="file10">github.com/HOangAG2207/GoBeK03/internal/service/health/check_health.go (100.0%)</option>
+				
+				<option value="file11">github.com/HOangAG2207/GoBeK03/internal/service/health/service.go (100.0%)</option>
+				
+				<option value="file12">github.com/HOangAG2207/GoBeK03/internal/service/url/service.go (100.0%)</option>
+				
+				<option value="file13">github.com/HOangAG2207/GoBeK03/internal/service/url/shorten_url.go (90.0%)</option>
 				
 				</select>
 			</div>
@@ -108,15 +122,27 @@ import (
 // @Failure      500  {object}  map[string]string
 // @Router       /health-check [get]
 func (h *healthHandler) CheckHealth(ctx echo.Context) error <span class="cov10" title="3">{
+
+        // ===== 1. Gọi service layer =====
+
+        // Gọi business logic để lấy thông tin health
         res, err := h.service.CheckHealth()
+
+        // ===== 2. Handle error =====
         if err != nil </span><span class="cov1" title="1">{
+
+                // Trả về HTTP 500 + JSON message lỗi
                 ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
                         "error": "Internal Server Error!",
                 })
-                return err
 
+                // Trả error cho Echo (có thể được middleware log lại)
+                return err
         }</span>
 
+        // ===== 3. Return success =====
+
+        // Trả về HTTP 200 + dữ liệu health
         <span class="cov6" title="2">return ctx.JSON(http.StatusOK, res)</span>
 }
 </pre>
@@ -128,68 +154,274 @@ import (
         "github.com/labstack/echo/v4"
 )
 
+// Health là interface định nghĩa các handler liên quan đến health-check
+// Giúp:
+// - Dễ mock khi test
+// - Không phụ thuộc vào implementation cụ thể
 type Health interface {
+
+        // CheckHealth xử lý HTTP request (Echo context)
+        // Trả về error để Echo xử lý nếu có lỗi
         CheckHealth(ctx echo.Context) error
 }
+
+// healthHandler là struct implement interface Health
 type healthHandler struct {
+
+        // service là dependency của handler (business logic layer)
+        // Interface này nằm ở layer service → đúng clean architecture
         service service.Health
 }
 
-func NewHealth(svc service.Health) Health <span class="cov8" title="1">{
+// NewHealth là constructor để khởi tạo handler
+// Nhận vào service (dependency injection)
+func NewHealth(svc service.Health) Health <span class="cov10" title="4">{
+
+        // Trả về dưới dạng interface (Health)
+        // → giúp ẩn implementation bên trong
         return &amp;healthHandler{
                 service: svc,
         }
 }</span>
 </pre>
 		
-		<pre class="file" id="file2" style="display: none">package repository
+		<pre class="file" id="file2" style="display: none">package url
 
+import (
+        "errors"
+
+        "github.com/HOangAG2207/GoBeK03/internal/service/url"
+        "github.com/labstack/echo/v4"
+)
+
+var (
+        ErrCodeNotFound       = errors.New("code not found")
+        InValidRequestPayload = errors.New("invalid request payload")
+        InternalServerError   = errors.New("internal server error")
+)
+
+type UrlHandler interface {
+        ShortenURL(ctx echo.Context) error
+}
+type urlHandler struct {
+        service url.UrlService
+}
+
+func NewUrlHandler(svc url.UrlService) UrlHandler <span class="cov10" title="7">{
+        return &amp;urlHandler{
+                service: svc,
+        }
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package url
+
+import (
+        "net/http"
+
+        "github.com/labstack/echo/v4"
+        "github.com/rs/zerolog/log"
+)
+
+type shortenURLRequest struct {
+        URL string `json:"url" validate:"required,url" example:"https://www.google.com"`
+}
+
+type shortenURLResponse struct {
+        Code    string `json:"code"`
+        Message string `json:"message"`
+}
+
+// ShortenURL godoc
+// @Summary      Shorten a URL
+// @Description  Generate a shortened URL code from a given URL
+// @Tags         url
+// @Accept       json
+// @Produce      json
+// @Param        request  body      shortenURLRequest  true  "URL to shorten"
+// @Success      200      {object}  shortenURLResponse
+// @Failure      400      {object}  shortenURLResponse
+// @Failure      500      {object}  shortenURLResponse
+// @Router       /url/shorten [post]
+func (h *urlHandler) ShortenURL(ctx echo.Context) error <span class="cov10" title="6">{
+        input := new(shortenURLRequest)
+
+        if err := ctx.Bind(input); err != nil || input.URL == "" </span><span class="cov4" title="2">{
+                return ctx.JSON(http.StatusBadRequest, shortenURLResponse{
+                        Message: InValidRequestPayload.Error(),
+                })
+        }</span>
+        <span class="cov7" title="4">code, err := h.service.ShortenURL(ctx.Request().Context(), input.URL)
+        if err != nil </span><span class="cov4" title="2">{
+                log.Error().
+                        Str("url", input.URL).
+                        Err(err).
+                        Msg("service return error when shorten url")
+
+                return ctx.JSON(http.StatusInternalServerError, shortenURLResponse{
+                        Message: InternalServerError.Error(),
+                        // Message: err.Error(),
+                })
+        }</span>
+
+        <span class="cov4" title="2">return ctx.JSON(http.StatusOK, shortenURLResponse{
+                Code:    code,
+                Message: "Shorten URL generated successfully!",
+        })</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package repository
+
+// HealthPing kiểm tra trạng thái "sức khỏe" của hệ thống ở tầng repository
 func (repo *healthRepository) HealthPing() bool <span class="cov10" title="2">{
+
+        // Hiện tại luôn trả về true
+        // → nghĩa là hệ thống luôn được coi là "healthy"
         return true
 }</span>
 </pre>
 		
-		<pre class="file" id="file3" style="display: none">package repository
+		<pre class="file" id="file5" style="display: none">package repository
 
 //go:generate mockery --name Health --filename check_health_mock.go --output ./mocks
 type Health interface {
+
+        // HealthPing kiểm tra trạng thái của hệ thống (DB, Redis, service...)
+        // Trả về true nếu OK, false nếu có vấn đề
         HealthPing() bool
 }
 
+// healthRepository là implementation cụ thể của interface Health
 type healthRepository struct {
+        // Hiện tại chưa có dependency (DB, Redis,...)
+        // Sau này có thể inject thêm vào đây
 }
 
-func NewHealth() Health <span class="cov10" title="2">{
+// NewHealth là constructor tạo mới repository
+func NewHealth() Health <span class="cov10" title="5">{
+
+        // Trả về dưới dạng interface → giúp loose coupling
         return &amp;healthRepository{}
 }</span>
 </pre>
 		
-		<pre class="file" id="file4" style="display: none">package service
+		<pre class="file" id="file6" style="display: none">package url
+
+import "context"
+
+func (r *urlRepository) GetURL(ctx context.Context, code string) (string, error) <span class="cov10" title="2">{
+        return r.redis.Get(ctx, code).Result()
+}</span>
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package url
+
+import (
+        "context"
+        "time"
+
+        "github.com/redis/go-redis/v9"
+)
+
+//go:generate mockery --name UrlRepository --filename url_repository_mock.go --output ./mocks
+type UrlRepository interface {
+        StoreURL(ctx context.Context, code, url string) error
+        GetURL(ctx context.Context, code string) (string, error)
+        StoreURLIfAbsent(ctx context.Context, code, url string) (bool, error)
+}
+type urlRepository struct {
+        redis   *redis.Client
+        exptime time.Duration
+}
+
+func NewUrlRepository(rc *redis.Client, exptime time.Duration) UrlRepository <span class="cov10" title="12">{
+        if exptime &lt;= 0 </span><span class="cov8" title="9">{
+                exptime = 24 * time.Hour
+        }</span>
+        <span class="cov10" title="12">return &amp;urlRepository{
+                redis:   rc,
+                exptime: exptime,
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package url
+
+import "context"
+
+func (r *urlRepository) StoreURL(ctx context.Context, code, url string) error <span class="cov10" title="2">{
+        return r.redis.Set(ctx, code, url, r.exptime).Err()
+}</span>
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package url
+
+import (
+        "context"
+        "fmt"
+)
+
+func (r *urlRepository) StoreURLIfAbsent(ctx context.Context, code, url string) (bool, error) <span class="cov10" title="6">{
+        ok, err := r.redis.SetNX(ctx, code, url, r.exptime).Result()
+        if err != nil </span><span class="cov4" title="2">{
+                return false, fmt.Errorf("redis setnx failed: %w", err)
+        }</span>
+        <span class="cov7" title="4">return ok, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">package service
 
 import (
         "github.com/HOangAG2207/GoBeK03/internal/model"
         "github.com/HOangAG2207/GoBeK03/internal/utils"
 )
 
+// CheckHealth là business logic xử lý health-check của hệ thống
+// Service sẽ gọi repository để kiểm tra trạng thái hạ tầng
 func (s *healthService) CheckHealth() (*model.Health, error) <span class="cov10" title="4">{
+
+        // ===== 1. Kiểm tra trạng thái hệ thống qua repository =====
+
+        // repo.HealthPing() thường kiểm tra các dependency như Redis, DB,...
         ok := s.repo.HealthPing()
+
+        // Nếu hệ thống không healthy → trả về nil
+        // (hiện tại không trả error, chỉ return nil result)
         if !ok </span><span class="cov1" title="1">{
                 return nil, nil
         }</span>
+
+        // ===== 2. Xử lý instance ID =====
+
+        // Lấy instanceId từ config (nếu có)
         <span class="cov8" title="3">id := s.instanceId
+
+        // Nếu instanceId rỗng → tự generate UUID
+        // đảm bảo mỗi instance luôn có ID duy nhất
         if id == "" </span><span class="cov1" title="1">{
                 id = utils.UuidGenerator()
         }</span>
 
+        // ===== 3. Build response model =====
+
+        // Trả về struct Health chứa thông tin service
         <span class="cov8" title="3">return &amp;model.Health{
-                Message:     "OK",
+
+                // Message cố định khi hệ thống healthy
+                Message: "OK",
+
+                // Tên service lấy từ config
                 ServiceName: s.serviceName,
-                InstanceID:  id,
+
+                // Instance ID (config hoặc generated UUID)
+                InstanceID: id,
         }, nil</span>
 }
 </pre>
 		
-		<pre class="file" id="file5" style="display: none">package service
+		<pre class="file" id="file11" style="display: none">package service
 
 import (
         "github.com/HOangAG2207/GoBeK03/internal/model"
@@ -198,16 +430,36 @@ import (
 
 //go:generate mockery --name Health --filename check_health_mock.go --output ./mocks
 type Health interface {
+
+        // CheckHealth xử lý logic kiểm tra trạng thái hệ thống
+        // Trả về:
+        // - model.Health: thông tin health status
+        // - error: lỗi nếu có trong quá trình xử lý
         CheckHealth() (*model.Health, error)
 }
 
+// healthService là implementation cụ thể của interface Health
+// Nó chứa business logic thật sự của health-check
 type healthService struct {
-        repo        repository.Health
+
+        // repo là dependency tầng repository
+        // dùng để kiểm tra trạng thái hạ tầng (Redis, DB,...)
+        repo repository.Health
+
+        // serviceName là tên service (inject từ config)
         serviceName string
-        instanceId  string
+
+        // instanceId là định danh instance của service
+        // có thể được truyền từ config hoặc generate runtime
+        instanceId string
 }
 
-func NewHealth(repo repository.Health, serviceName, instanceId string) Health <span class="cov8" title="1">{
+// NewHealth là constructor của service Health
+// Dùng dependency injection để truyền repo + metadata vào service
+func NewHealth(repo repository.Health, serviceName, instanceId string) Health <span class="cov10" title="4">{
+
+        // Trả về interface Health thay vì struct cụ thể
+        // giúp ẩn implementation và dễ mock/test hơn
         return &amp;healthService{
                 repo:        repo,
                 serviceName: serviceName,
@@ -216,13 +468,72 @@ func NewHealth(repo repository.Health, serviceName, instanceId string) Health <s
 }</span>
 </pre>
 		
-		<pre class="file" id="file6" style="display: none">package utils
+		<pre class="file" id="file12" style="display: none">package url
 
-import "github.com/google/uuid"
+import (
+        "context"
+        "errors"
 
-func UuidGenerator() string <span class="cov8" title="1">{
-        return uuid.New().String()
-}</span>
+        "github.com/HOangAG2207/GoBeK03/internal/repository/url"
+)
+
+const (
+        defaultUrlLengthCode = 7
+        maxRetryAttempts     = 10
+)
+
+var (
+        ErrCodeNotFound       = errors.New("shortened URL not found")
+        ErrMaxRetriesExceeded = errors.New("maximum retry attempts exceeded for generating unique URL code")
+)
+
+//go:generate mockery --name UrlService --filename url_service_mock.go --output ./mocks
+
+type UrlService interface {
+        ShortenURL(ctx context.Context, url string) (string, error)
+}
+type urlService struct {
+        repo          url.UrlRepository
+        urlLengthCode int
+}
+
+func NewUrlService(repo url.UrlRepository, urlLengthCode int) UrlService <span class="cov10" title="8">{
+        if urlLengthCode == 0 </span><span class="cov7" title="4">{
+                urlLengthCode = defaultUrlLengthCode
+        }</span>
+        <span class="cov10" title="8">return &amp;urlService{
+                repo:          repo,
+                urlLengthCode: urlLengthCode,
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file13" style="display: none">package url
+
+import (
+        "context"
+
+        "github.com/HOangAG2207/GoBeK03/internal/utils"
+)
+
+func (s *urlService) ShortenURL(ctx context.Context, url string) (string, error) <span class="cov6" title="6">{
+        for attempt := 1; attempt &lt;= maxRetryAttempts; attempt++ </span><span class="cov10" title="16">{
+                urlCode, err := utils.GenerateCode(s.urlLengthCode)
+
+                if err != nil </span><span class="cov0" title="0">{
+                        return "", err
+                }</span>
+
+                <span class="cov10" title="16">stored, err := s.repo.StoreURLIfAbsent(ctx, urlCode, url)
+                if err != nil </span><span class="cov3" title="2">{
+                        return "", err
+                }</span>
+                <span class="cov9" title="14">if stored </span><span class="cov4" title="3">{
+                        return urlCode, nil // atomically claimed
+                }</span>
+        }
+        <span class="cov1" title="1">return "", ErrMaxRetriesExceeded</span>
+}
 </pre>
 		
 		</div>

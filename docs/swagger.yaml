@@ -3,10 +3,15 @@ definitions:
   model.Health:
     properties:
       instance_id:
+        description: |-
+          InstanceID: định danh instance cụ thể của service
+          Hữu ích khi chạy nhiều instance (load balancing, Kubernetes, etc.)
         type: string
       message:
+        description: 'Message: thông điệp trạng thái (ví dụ: "OK", "Healthy", "Down")'
         type: string
       service_name:
+        description: 'ServiceName: tên của service (giúp nhận diện khi có nhiều service)'
         type: string
     type: object
   url.shortenURLRequest:
