@@ -13,7 +13,7 @@ const (
 func GenerateCode(length int) (string, error) {
 	var strBuilder bytes.Buffer
 
-	for range length {
+	for i := 0; i < length; i++ {
 		randomIndex, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
 		if err != nil {
 			return "", err
