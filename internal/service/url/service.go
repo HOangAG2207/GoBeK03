@@ -20,7 +20,7 @@ var (
 //go:generate mockery --name UrlService --filename url_service_mock.go --output ./mocks
 
 type UrlService interface {
-	ShortenURL(ctx context.Context, url string) (string, error)
+	ShortenURL(ctx context.Context, url string, exp int64) (string, error)
 }
 type urlService struct {
 	repo          url.UrlRepository

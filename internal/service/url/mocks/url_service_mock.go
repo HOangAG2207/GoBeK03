@@ -13,9 +13,9 @@ type UrlService struct {
 	mock.Mock
 }
 
-// ShortenURL provides a mock function with given fields: ctx, _a1
-func (_m *UrlService) ShortenURL(ctx context.Context, _a1 string) (string, error) {
-	ret := _m.Called(ctx, _a1)
+// ShortenURL provides a mock function with given fields: ctx, _a1, exp
+func (_m *UrlService) ShortenURL(ctx context.Context, _a1 string, exp int64) (string, error) {
+	ret := _m.Called(ctx, _a1, exp)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ShortenURL")
@@ -23,17 +23,17 @@ func (_m *UrlService) ShortenURL(ctx context.Context, _a1 string) (string, error
 
 	var r0 string
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (string, error)); ok {
-		return rf(ctx, _a1)
+	if rf, ok := ret.Get(0).(func(context.Context, string, int64) (string, error)); ok {
+		return rf(ctx, _a1, exp)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
-		r0 = rf(ctx, _a1)
+	if rf, ok := ret.Get(0).(func(context.Context, string, int64) string); ok {
+		r0 = rf(ctx, _a1, exp)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, _a1)
+	if rf, ok := ret.Get(1).(func(context.Context, string, int64) error); ok {
+		r1 = rf(ctx, _a1, exp)
 	} else {
 		r1 = ret.Error(1)
 	}
