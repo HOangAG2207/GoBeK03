@@ -20,7 +20,7 @@ func (h *healthHandler) CheckHealth(ctx echo.Context) error {
 	// ===== 1. Gọi service layer =====
 
 	// Gọi business logic để lấy thông tin health
-	res, err := h.service.CheckHealth()
+	res, err := h.service.CheckHealth(ctx.Request().Context())
 
 	// ===== 2. Handle error =====
 	if err != nil {

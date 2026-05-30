@@ -1,8 +1,16 @@
 package service
 
 import (
+	"context"
+
 	"github.com/HOangAG2207/GoBeK03/internal/model"
 	repository "github.com/HOangAG2207/GoBeK03/internal/repository/health"
+)
+
+const (
+	StatusOK         = "OK"
+	RedisPingTimeout = "redis: client is closed"
+	DBPingConfused   = "database: database is closed"
 )
 
 //go:generate mockery --name Health --filename check_health_mock.go --output ./mocks
@@ -12,7 +20,7 @@ type Health interface {
 	// Trả về:
 	// - model.Health: thông tin health status
 	// - error: lỗi nếu có trong quá trình xử lý
-	CheckHealth() (*model.Health, error)
+	CheckHealth(ctx context.Context) (*model.Health, error)
 }
 
 // healthService là implementation cụ thể của interface Health
@@ -33,7 +41,7 @@ type healthService struct {
 
 // NewHealth là constructor của service Health
 // Dùng dependency injection để truyền repo + metadata vào service
-func NewHealth(repo repository.Health, serviceName, instanceId string) Health {
+func NewHealthService(repo repository.Health, serviceName, instanceId string) Health {
 
 	// Trả về interface Health thay vì struct cụ thể
 	// giúp ẩn implementation và dễ mock/test hơn

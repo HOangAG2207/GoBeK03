@@ -73,17 +73,17 @@ func (e *engine) InitRoutes() {
 	// ===== HEALTH CHECK =====
 
 	// Khởi tạo repository (tầng data access)
-	checkHealthRepo := repository.NewHealth()
+	checkHealthRepo := repository.NewHealthRepository(e.redisClient)
 
 	// Khởi tạo service (business logic)
-	checkHealthService := service.NewHealth(
+	checkHealthService := service.NewHealthService(
 		checkHealthRepo,
 		e.config.ServiceName,
 		e.config.InstanceID,
 	)
 
 	// Khởi tạo handler (HTTP layer)
-	checkHealthHandler := handler.NewHealth(checkHealthService)
+	checkHealthHandler := handler.NewHealthHandler(checkHealthService)
 
 	// ===== SHORTEN URL =====
 

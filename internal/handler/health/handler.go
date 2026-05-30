@@ -26,7 +26,7 @@ type healthHandler struct {
 
 // NewHealth là constructor để khởi tạo handler
 // Nhận vào service (dependency injection)
-func NewHealth(svc service.Health) Health {
+func NewHealthHandler(svc service.Health) Health {
 
 	// Trả về dưới dạng interface (Health)
 	// → giúp ẩn implementation bên trong

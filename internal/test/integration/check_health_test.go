@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/HOangAG2207/GoBeK03/internal/api"
+	pkgredis "github.com/HOangAG2207/GoBeK03/pkg/redis"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -90,7 +91,8 @@ func TestEndpoint_CheckHealth(t *testing.T) {
 			// ===== 4. Khởi tạo engine (full application) =====
 
 			engine := api.NewEngine(&api.EngineOpts{
-				Cfg: cfg, // inject config test vào hệ thống
+				Cfg:         cfg, // inject config test vào hệ thống
+				RedisClient: pkgredis.InitMockRedis(t),
 			})
 
 			// ===== 5. Execute HTTP request =====
