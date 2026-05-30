@@ -14,7 +14,7 @@ import (
 // @Produce      json
 // @Success      200  {object}  model.Health
 // @Failure      500  {object}  map[string]string
-// @Router       /health-check [get]
+// @Router       /v1/health-check [get]
 func (h *healthHandler) CheckHealth(ctx echo.Context) error {
 
 	// ===== 1. Gọi service layer =====

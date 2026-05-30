@@ -9,6 +9,7 @@ import (
 
 type shortenURLRequest struct {
 	URL string `json:"url" validate:"required,url" example:"https://www.google.com"`
+	Exp int64  `json:"exp" example:"604800"` // thời gian hết hạn (giây)
 }
 
 type shortenURLResponse struct {
@@ -18,15 +19,15 @@ type shortenURLResponse struct {
 
 // ShortenURL godoc
 // @Summary      Shorten a URL
-// @Description  Generate a shortened URL code from a given URL
+// @Description  Generate a shortened URL code from a given URL with optional expiration time
 // @Tags         url
 // @Accept       json
 // @Produce      json
-// @Param        request  body      shortenURLRequest  true  "URL to shorten"
+// @Param        request  body      shortenURLRequest  true  "URL to shorten with expiration time (exp in seconds)"
 // @Success      200      {object}  shortenURLResponse
 // @Failure      400      {object}  shortenURLResponse
 // @Failure      500      {object}  shortenURLResponse
-// @Router       /url/shorten [post]
+// @Router       /v1/links/shorten [post]
 func (h *urlHandler) ShortenURL(ctx echo.Context) error {
 	input := new(shortenURLRequest)
 
@@ -35,16 +36,35 @@ func (h *urlHandler) ShortenURL(ctx echo.Context) error {
 			Message: InValidRequestPayload.Error(),
 		})
 	}
-	code, err := h.service.ShortenURL(ctx.Request().Context(), input.URL)
+
+	// ✅ validate exp
+	if input.Exp < 0 {
+		return ctx.JSON(http.StatusBadRequest, shortenURLResponse{
+			Message: "expiration must be greater than 0",
+		})
+	}
+
+	// default exp nếu không truyền
+	exp := input.Exp
+	if exp == 0 {
+		exp = 3600
+	}
+
+	code, err := h.service.ShortenURL(
+		ctx.Request().Context(),
+		input.URL,
+		exp,
+	)
+
 	if err != nil {
 		log.Error().
 			Str("url", input.URL).
+			Int64("exp", exp).
 			Err(err).
 			Msg("service return error when shorten url")
 
 		return ctx.JSON(http.StatusInternalServerError, shortenURLResponse{
 			Message: InternalServerError.Error(),
-			// Message: err.Error(),
 		})
 	}
 

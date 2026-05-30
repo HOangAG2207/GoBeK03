@@ -21,7 +21,7 @@ import (
 // @host            localhost:8080
 // Host mà Swagger sẽ gọi API (thường dùng cho môi trường local/dev)
 
-// @BasePath 		/api
+// @BasePath 		/
 // Base path (prefix) cho tất cả các endpoint API
 
 func main() {

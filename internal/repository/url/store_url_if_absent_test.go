@@ -103,7 +103,7 @@ func TestRepository_StoreURLIfAbsent(t *testing.T) {
 			repo := NewUrlRepository(redisClient, tc.expireIn)
 
 			// ===== 3. Call function =====
-			result, err := repo.StoreURLIfAbsent(ctx, tc.code, tc.url)
+			result, err := repo.StoreURLIfAbsent(ctx, tc.code, tc.url, 5)
 
 			// ===== 4. Assert result =====
 			assert.Equal(t, tc.expectedResult, result)

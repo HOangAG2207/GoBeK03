@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/health-check": {
+        "/v1/health-check": {
             "get": {
                 "description": "Returns service health status",
                 "produces": [
@@ -44,9 +44,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/url/shorten": {
+        "/v1/links/shorten": {
             "post": {
-                "description": "Generate a shortened URL code from a given URL",
+                "description": "Generate a shortened URL code from a given URL with optional expiration time",
                 "consumes": [
                     "application/json"
                 ],
@@ -59,7 +59,7 @@ const docTemplate = `{
                 "summary": "Shorten a URL",
                 "parameters": [
                     {
-                        "description": "URL to shorten",
+                        "description": "URL to shorten with expiration time (exp in seconds)",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -115,6 +115,11 @@ const docTemplate = `{
                 "url"
             ],
             "properties": {
+                "exp": {
+                    "description": "thời gian hết hạn (giây)",
+                    "type": "integer",
+                    "example": 604800
+                },
                 "url": {
                     "type": "string",
                     "example": "https://www.google.com"
@@ -139,7 +144,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/api",
+	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "GoBe K03 project API",
 	Description:      "API for GoBe K03",

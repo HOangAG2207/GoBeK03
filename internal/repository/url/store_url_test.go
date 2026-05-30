@@ -60,7 +60,7 @@ func TestRepository_StoreURL(t *testing.T) {
 
 			urlStorage := NewUrlRepository(redisMockClient, 0)
 
-			err := urlStorage.StoreURL(ctx, "test", "https://example.com")
+			err := urlStorage.StoreURL(ctx, "test", "https://example.com", 5)
 			assert.Equal(t, tc.expectedError, err)
 
 			if err == nil {

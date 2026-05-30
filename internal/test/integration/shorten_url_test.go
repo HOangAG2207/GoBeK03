@@ -20,6 +20,7 @@ func TestEndpoint_ShortenUrl(t *testing.T) {
 
 	type requestBody struct {
 		URL string `json:"url"`
+		Exp int64  `json:"exp,omitempty"`
 	}
 
 	testCases := []struct {
@@ -32,7 +33,7 @@ func TestEndpoint_ShortenUrl(t *testing.T) {
 		expectCode         bool
 	}{
 		{
-			name: "success - shorten url",
+			name: "success - with exp",
 
 			setupMockRedis: func(ctx context.Context, redisClient *redis.Client) *redis.Client {
 				return redisClient
@@ -41,10 +42,37 @@ func TestEndpoint_ShortenUrl(t *testing.T) {
 			setupTestHTTP: func(engine api.Engine) *httptest.ResponseRecorder {
 				body := requestBody{
 					URL: "https://google.com",
+					Exp: 3600,
 				}
 				jsonBody, _ := json.Marshal(body)
 
-				req := httptest.NewRequest(http.MethodPost, "/api/url/shorten", bytes.NewBuffer(jsonBody))
+				req := httptest.NewRequest(http.MethodPost, "/v1/links/shorten", bytes.NewBuffer(jsonBody))
+				req.Header.Set("Content-Type", "application/json")
+
+				rec := httptest.NewRecorder()
+				engine.ServeHTTP(rec, req)
+
+				return rec
+			},
+
+			expectedStatusCode: http.StatusOK,
+			expectCode:         true,
+		},
+		{
+			name: "success - default exp",
+
+			setupMockRedis: func(ctx context.Context, redisClient *redis.Client) *redis.Client {
+				return redisClient
+			},
+
+			setupTestHTTP: func(engine api.Engine) *httptest.ResponseRecorder {
+				body := requestBody{
+					URL: "https://google.com",
+					// không truyền exp
+				}
+				jsonBody, _ := json.Marshal(body)
+
+				req := httptest.NewRequest(http.MethodPost, "/v1/links/shorten", bytes.NewBuffer(jsonBody))
 				req.Header.Set("Content-Type", "application/json")
 
 				rec := httptest.NewRecorder()
@@ -69,7 +97,33 @@ func TestEndpoint_ShortenUrl(t *testing.T) {
 				}
 				jsonBody, _ := json.Marshal(body)
 
-				req := httptest.NewRequest(http.MethodPost, "/api/url/shorten", bytes.NewBuffer(jsonBody))
+				req := httptest.NewRequest(http.MethodPost, "/v1/links/shorten", bytes.NewBuffer(jsonBody))
+				req.Header.Set("Content-Type", "application/json")
+
+				rec := httptest.NewRecorder()
+				engine.ServeHTTP(rec, req)
+
+				return rec
+			},
+
+			expectedStatusCode: http.StatusBadRequest,
+			expectCode:         false,
+		},
+		{
+			name: "bad request - invalid exp",
+
+			setupMockRedis: func(ctx context.Context, redisClient *redis.Client) *redis.Client {
+				return redisClient
+			},
+
+			setupTestHTTP: func(engine api.Engine) *httptest.ResponseRecorder {
+				body := requestBody{
+					URL: "https://google.com",
+					Exp: -1,
+				}
+				jsonBody, _ := json.Marshal(body)
+
+				req := httptest.NewRequest(http.MethodPost, "/v1/links/shorten", bytes.NewBuffer(jsonBody))
 				req.Header.Set("Content-Type", "application/json")
 
 				rec := httptest.NewRecorder()
@@ -91,10 +145,11 @@ func TestEndpoint_ShortenUrl(t *testing.T) {
 			setupTestHTTP: func(engine api.Engine) *httptest.ResponseRecorder {
 				body := requestBody{
 					URL: "https://google.com",
+					Exp: 3600,
 				}
 				jsonBody, _ := json.Marshal(body)
 
-				req := httptest.NewRequest(http.MethodPost, "/api/url/shorten", bytes.NewBuffer(jsonBody))
+				req := httptest.NewRequest(http.MethodPost, "/v1/links/shorten", bytes.NewBuffer(jsonBody))
 				req.Header.Set("Content-Type", "application/json")
 
 				rec := httptest.NewRecorder()
@@ -144,17 +199,13 @@ func TestEndpoint_ShortenUrl(t *testing.T) {
 			code, _ := resp["code"].(string)
 
 			if tc.expectCode {
-				// ✅ Có code
 				assert.NotEmpty(t, code)
 
-				// ✅ đúng charset base62
 				assert.Regexp(t, regexp.MustCompile(`^[a-zA-Z0-9]+$`), code)
 
-				// ✅ optional: length hợp lý
 				assert.GreaterOrEqual(t, len(code), 6)
 				assert.LessOrEqual(t, len(code), 12)
 			} else {
-				// ❌ Không có code
 				assert.Empty(t, code)
 			}
 		})

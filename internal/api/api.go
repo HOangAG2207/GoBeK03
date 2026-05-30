@@ -97,14 +97,12 @@ func (e *engine) InitRoutes() {
 	shortenUrlHandler := urlHandler.NewUrlHandler(shortenUrlService)
 
 	// ===== ROUTES =====
-
 	// Redirect từ "/" sang Swagger docs
-	e.app.GET("/", func(c echo.Context) error {
-		return c.Redirect(http.StatusMovedPermanently, "/api/docs/index.html")
-	})
-
+	// e.app.GET("/", func(c echo.Context) error {
+	// 	return c.Redirect(http.StatusFound, "/v1/docs/index.html")
+	// })
 	// Group tất cả API dưới prefix /api
-	apiGroup := e.app.Group("/api")
+	apiGroup := e.app.Group("/v1")
 
 	// Swagger UI (docs)
 	apiGroup.GET("/docs/*", echoSwagger.WrapHandler)
@@ -113,7 +111,8 @@ func (e *engine) InitRoutes() {
 	apiGroup.GET("/health-check", checkHealthHandler.CheckHealth)
 
 	// API rút gọn URL
-	apiGroup.POST("/url/shorten", shortenUrlHandler.ShortenURL)
+	apiGroup.POST("/links/shorten", shortenUrlHandler.ShortenURL)
+
 }
 
 // Start: chạy HTTP server

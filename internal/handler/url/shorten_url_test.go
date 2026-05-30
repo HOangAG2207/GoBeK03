@@ -27,15 +27,33 @@ func TestHandler_ShortenUrl(t *testing.T) {
 		expectedResponse string
 	}{
 		{
-			name: "success",
+			name: "success_with_exp",
+
+			requestBody: `{"url":"https://google.com","exp":3600}`,
+
+			setupMockSvc: func() *mocks.UrlService {
+				mockSvc := &mocks.UrlService{}
+				mockSvc.
+					On("ShortenURL", mock.Anything, "https://google.com", int64(3600)).
+					Return("abc123", nil).
+					Once()
+				return mockSvc
+			},
+
+			expectedStatus:   http.StatusOK,
+			expectedResponse: `{"code":"abc123","message":"Shorten URL generated successfully!"}`,
+		},
+		{
+			name: "success_default_exp",
 
 			requestBody: `{"url":"https://google.com"}`,
 
 			setupMockSvc: func() *mocks.UrlService {
 				mockSvc := &mocks.UrlService{}
 				mockSvc.
-					On("ShortenURL", mock.Anything, "https://google.com").
-					Return("abc123", nil)
+					On("ShortenURL", mock.Anything, "https://google.com", int64(3600)).
+					Return("abc123", nil).
+					Once()
 				return mockSvc
 			},
 
@@ -57,13 +75,14 @@ func TestHandler_ShortenUrl(t *testing.T) {
 		{
 			name: "service error",
 
-			requestBody: `{"url":"https://google.com"}`,
+			requestBody: `{"url":"https://google.com","exp":3600}`,
 
 			setupMockSvc: func() *mocks.UrlService {
 				mockSvc := &mocks.UrlService{}
 				mockSvc.
-					On("ShortenURL", mock.Anything, "https://google.com").
-					Return("", errors.New("redis down"))
+					On("ShortenURL", mock.Anything, "https://google.com", int64(3600)).
+					Return("", errors.New("redis down")).
+					Once()
 				return mockSvc
 			},
 
@@ -79,7 +98,7 @@ func TestHandler_ShortenUrl(t *testing.T) {
 
 			e := echo.New()
 
-			req := httptest.NewRequest(http.MethodPost, "/api/url/shorten", bytes.NewBufferString(tc.requestBody))
+			req := httptest.NewRequest(http.MethodPost, "/v1/links/shorten", bytes.NewBufferString(tc.requestBody))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 
 			rec := httptest.NewRecorder()
@@ -94,7 +113,8 @@ func TestHandler_ShortenUrl(t *testing.T) {
 			assert.Equal(t, tc.expectedStatus, rec.Code)
 
 			assert.JSONEq(t, tc.expectedResponse, rec.Body.String())
+
+			mockSvc.AssertExpectations(t)
 		})
 	}
-
 }
