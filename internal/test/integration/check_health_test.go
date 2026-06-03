@@ -51,7 +51,7 @@ func TestEndpoint_CheckHealth(t *testing.T) {
 				// tạo HTTP request giả lập
 				req := httptest.NewRequest(
 					http.MethodGet,
-					"/api/health-check",
+					"/v1/health-check",
 					nil,
 				)
 
