@@ -20,7 +20,7 @@ type shortenURLResponse struct {
 // ShortenURL godoc
 // @Summary      Shorten a URL
 // @Description  Generate a shortened URL code from a given URL with optional expiration time
-// @Tags         url
+// @Tags         links
 // @Accept       json
 // @Produce      json
 // @Param        request  body      shortenURLRequest  true  "URL to shorten with expiration time (exp in seconds)"
