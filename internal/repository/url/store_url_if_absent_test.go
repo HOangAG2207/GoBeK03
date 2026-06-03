@@ -2,6 +2,7 @@ package url
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -33,8 +34,7 @@ func TestRepository_StoreURLIfAbsent(t *testing.T) {
 			expireIn: time.Hour,
 
 			setupMock: func(ctx context.Context) *redis.Client {
-				redisClient := pkgredis.InitMockRedis(t)
-				return redisClient
+				return pkgredis.InitMockRedis(t)
 			},
 
 			expectedResult: true,
@@ -80,24 +80,41 @@ func TestRepository_StoreURLIfAbsent(t *testing.T) {
 			expireIn: -1,
 
 			setupMock: func(ctx context.Context) *redis.Client {
-				redisClient := pkgredis.InitMockRedis(t)
-				return redisClient
+				return pkgredis.InitMockRedis(t)
 			},
 
-			expectedResult: true, // should still store with default expiration
+			expectedResult: true,
 			expectedError:  nil,
 		},
 	}
+
 	for _, tc := range testCases {
+		tc := tc
+
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctx := context.Background()
 
+			// ===== 1. Setup redis =====
 			redisClient := tc.setupMock(ctx)
-			repo := NewUrlRepository(redisClient, time.Duration(tc.expireIn))
 
-			result, err := repo.StoreURLIfAbsent(ctx, tc.code, tc.url)
+			// ===== 2. Init repo =====
+			repo := NewUrlRepository(redisClient, tc.expireIn)
+
+			// ===== 3. Call function =====
+			result, err := repo.StoreURLIfAbsent(ctx, tc.code, tc.url, 5)
+
+			// ===== 4. Assert result =====
 			assert.Equal(t, tc.expectedResult, result)
-			assert.Equal(t, tc.expectedError, err)
+
+			// ===== 5. Assert error (FIX QUAN TRỌNG) =====
+			if tc.expectedError != nil {
+				assert.Error(t, err)
+				assert.True(t, errors.Is(err, tc.expectedError))
+			} else {
+				assert.NoError(t, err)
+			}
 		})
 	}
 }

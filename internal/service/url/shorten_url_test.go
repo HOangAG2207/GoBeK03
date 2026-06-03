@@ -13,88 +13,96 @@ import (
 func TestService_ShortenURL(t *testing.T) {
 	t.Parallel()
 
+	var ErrDB = errors.New("db error")
+
 	testCases := []struct {
 		name string
 
-		setupMockRepo func(ctx context.Context) *mockRepo.UrlRepository
+		inputURL string
 
-		inputOriginalURL string
+		setupMock func(t *testing.T, ctx context.Context) *mockRepo.UrlRepository
 
-		expectedCodeLen int
-		expectedError   error
+		expectErr error
+		expectLen int
 	}{
 		{
-			name: "success_first_try",
-			setupMockRepo: func(ctx context.Context) *mockRepo.UrlRepository {
+			name:     "success_first_try",
+			inputURL: "https://example.com",
+
+			setupMock: func(t *testing.T, ctx context.Context) *mockRepo.UrlRepository {
 				repo := mockRepo.NewUrlRepository(t)
 
 				repo.
-					On("StoreURLIfAbsent", ctx, mock.AnythingOfType("string"), "https://example.com").
+					On("StoreURLIfAbsent", ctx, mock.Anything, "https://example.com", int64(5)).
 					Return(true, nil).
 					Once()
 
 				return repo
 			},
-			inputOriginalURL: "https://example.com",
-			expectedCodeLen:  10,
-			expectedError:    nil,
+
+			expectErr: nil,
+			expectLen: 10,
 		},
 		{
-			name: "retry_then_success",
-			setupMockRepo: func(ctx context.Context) *mockRepo.UrlRepository {
+			name:     "retry_then_success",
+			inputURL: "https://example.com",
+
+			setupMock: func(t *testing.T, ctx context.Context) *mockRepo.UrlRepository {
 				repo := mockRepo.NewUrlRepository(t)
 
-				// fail lần 1
 				repo.
-					On("StoreURLIfAbsent", ctx, mock.Anything, "https://example.com").
+					On("StoreURLIfAbsent", ctx, mock.Anything, "https://example.com", int64(5)).
 					Return(false, nil).
 					Once()
 
-				// success lần 2
 				repo.
-					On("StoreURLIfAbsent", ctx, mock.Anything, "https://example.com").
+					On("StoreURLIfAbsent", ctx, mock.Anything, "https://example.com", int64(5)).
 					Return(true, nil).
 					Once()
 
 				return repo
 			},
-			inputOriginalURL: "https://example.com",
-			expectedCodeLen:  10,
-			expectedError:    nil,
+
+			expectErr: nil,
+			expectLen: 10,
 		},
 		{
-			name: "repo_error",
-			setupMockRepo: func(ctx context.Context) *mockRepo.UrlRepository {
+			name:     "repo_error",
+			inputURL: "https://example.com",
+
+			setupMock: func(t *testing.T, ctx context.Context) *mockRepo.UrlRepository {
 				repo := mockRepo.NewUrlRepository(t)
 
 				repo.
-					On("StoreURLIfAbsent", ctx, mock.Anything, "https://example.com").
-					Return(false, errors.New("db error")).
+					On("StoreURLIfAbsent", ctx, mock.Anything, "https://example.com", int64(5)).
+					Return(false, ErrDB).
 					Once()
 
 				return repo
 			},
-			inputOriginalURL: "https://example.com",
-			expectedCodeLen:  0,
-			expectedError:    errors.New("db error"),
+
+			expectErr: ErrDB,
+			expectLen: 0,
 		},
 		{
-			name: "max_retry_exceeded",
-			setupMockRepo: func(ctx context.Context) *mockRepo.UrlRepository {
+			name:     "max_retry_exceeded",
+			inputURL: "https://example.com",
+
+			setupMock: func(t *testing.T, ctx context.Context) *mockRepo.UrlRepository {
 				repo := mockRepo.NewUrlRepository(t)
 
 				for i := 0; i < maxRetryAttempts; i++ {
 					repo.
-						On("StoreURLIfAbsent", ctx, mock.Anything, "https://example.com").
+						On("StoreURLIfAbsent", ctx, mock.Anything, "https://example.com", int64(5)).
 						Return(false, nil).
 						Once()
 				}
 
 				return repo
 			},
-			inputOriginalURL: "https://example.com",
-			expectedCodeLen:  0,
-			expectedError:    ErrMaxRetriesExceeded,
+
+			expectErr: ErrMaxRetriesExceeded,
+			expectLen: 0,
 		},
 	}
 
@@ -106,23 +114,23 @@ func TestService_ShortenURL(t *testing.T) {
 
 			ctx := context.Background()
 
-			repo := tc.setupMockRepo(ctx)
-
+			repo := tc.setupMock(t, ctx)
 			service := NewUrlService(repo, 10)
 
-			code, err := service.ShortenURL(ctx, tc.inputOriginalURL)
+			code, err := service.ShortenURL(ctx, tc.inputURL, 5)
 
-			// check error
-			if tc.expectedError != nil {
+			// ===== assert error =====
+			if tc.expectErr != nil {
 				assert.Error(t, err)
-				assert.Equal(t, tc.expectedError.Error(), err.Error())
+				assert.ErrorIs(t, err, tc.expectErr) // ✅ giờ sẽ PASS
+				assert.Empty(t, code)
 				return
 			}
 
 			assert.NoError(t, err)
 
-			// check code length (do random)
-			assert.Len(t, code, tc.expectedCodeLen)
+			// ===== assert success =====
+			assert.Len(t, code, tc.expectLen)
 		})
 	}
 }

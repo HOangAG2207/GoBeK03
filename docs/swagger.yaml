@@ -1,19 +1,30 @@
-basePath: /api
+basePath: /
 definitions:
   model.Health:
     properties:
       instance_id:
+        description: |-
+          InstanceID: định danh instance cụ thể của service
+          Hữu ích khi chạy nhiều instance (load balancing, Kubernetes, etc.)
         type: string
       message:
+        description: 'Message: thông điệp trạng thái (ví dụ: "OK", "Healthy", "Down")'
         type: string
       service_name:
+        description: 'ServiceName: tên của service (giúp nhận diện khi có nhiều service)'
         type: string
     type: object
   url.shortenURLRequest:
     properties:
+      exp:
+        description: thời gian hết hạn (giây)
+        example: 604800
+        type: integer
       url:
         example: https://www.google.com
         type: string
+    required:
+    - url
     type: object
   url.shortenURLResponse:
     properties:
@@ -29,7 +40,7 @@ info:
   title: GoBe K03 project API
   version: "1.0"
 paths:
-  /health-check:
+  /v1/health-check:
     get:
       description: Returns service health status
       produces:
@@ -48,13 +59,14 @@ paths:
       summary: Check health
       tags:
       - health
-  /url/shorten:
+  /v1/links/shorten:
     post:
       consumes:
       - application/json
-      description: Generate a shortened URL code from a given URL
+      description: Generate a shortened URL code from a given URL with optional expiration
+        time
       parameters:
-      - description: URL to shorten
+      - description: URL to shorten with expiration time (exp in seconds)
         in: body
         name: request
         required: true

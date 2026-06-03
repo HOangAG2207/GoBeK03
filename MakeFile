@@ -84,7 +84,7 @@ ifndef t
 	$(error ❌ Missing test name: use t=<TestName>)
 endif
 	$(GO_TEST) $(GO_TEST_ARGS) -run $(t) $(PATH_TEST_ENDPOINT)
-	# ========================
+# ========================
 # Coverage
 # ========================
 

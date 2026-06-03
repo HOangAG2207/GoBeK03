@@ -41,17 +41,17 @@ func (_m *UrlRepository) GetURL(ctx context.Context, code string) (string, error
 	return r0, r1
 }
 
-// StoreURL provides a mock function with given fields: ctx, code, _a2
-func (_m *UrlRepository) StoreURL(ctx context.Context, code string, _a2 string) error {
-	ret := _m.Called(ctx, code, _a2)
+// StoreURL provides a mock function with given fields: ctx, code, _a2, exp
+func (_m *UrlRepository) StoreURL(ctx context.Context, code string, _a2 string, exp int64) error {
+	ret := _m.Called(ctx, code, _a2, exp)
 
 	if len(ret) == 0 {
 		panic("no return value specified for StoreURL")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
-		r0 = rf(ctx, code, _a2)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, int64) error); ok {
+		r0 = rf(ctx, code, _a2, exp)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -59,9 +59,9 @@ func (_m *UrlRepository) StoreURL(ctx context.Context, code string, _a2 string) 
 	return r0
 }
 
-// StoreURLIfAbsent provides a mock function with given fields: ctx, code, _a2
-func (_m *UrlRepository) StoreURLIfAbsent(ctx context.Context, code string, _a2 string) (bool, error) {
-	ret := _m.Called(ctx, code, _a2)
+// StoreURLIfAbsent provides a mock function with given fields: ctx, code, _a2, exp
+func (_m *UrlRepository) StoreURLIfAbsent(ctx context.Context, code string, _a2 string, exp int64) (bool, error) {
+	ret := _m.Called(ctx, code, _a2, exp)
 
 	if len(ret) == 0 {
 		panic("no return value specified for StoreURLIfAbsent")
@@ -69,17 +69,17 @@ func (_m *UrlRepository) StoreURLIfAbsent(ctx context.Context, code string, _a2 
 
 	var r0 bool
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) (bool, error)); ok {
-		return rf(ctx, code, _a2)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, int64) (bool, error)); ok {
+		return rf(ctx, code, _a2, exp)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) bool); ok {
-		r0 = rf(ctx, code, _a2)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, int64) bool); ok {
+		r0 = rf(ctx, code, _a2, exp)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
-		r1 = rf(ctx, code, _a2)
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, int64) error); ok {
+		r1 = rf(ctx, code, _a2, exp)
 	} else {
 		r1 = ret.Error(1)
 	}

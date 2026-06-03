@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	context "context"
+
 	model "github.com/HOangAG2207/GoBeK03/internal/model"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -12,9 +14,9 @@ type Health struct {
 	mock.Mock
 }
 
-// CheckHealth provides a mock function with no fields
-func (_m *Health) CheckHealth() (*model.Health, error) {
-	ret := _m.Called()
+// CheckHealth provides a mock function with given fields: ctx
+func (_m *Health) CheckHealth(ctx context.Context) (*model.Health, error) {
+	ret := _m.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CheckHealth")
@@ -22,19 +24,19 @@ func (_m *Health) CheckHealth() (*model.Health, error) {
 
 	var r0 *model.Health
 	var r1 error
-	if rf, ok := ret.Get(0).(func() (*model.Health, error)); ok {
-		return rf()
+	if rf, ok := ret.Get(0).(func(context.Context) (*model.Health, error)); ok {
+		return rf(ctx)
 	}
-	if rf, ok := ret.Get(0).(func() *model.Health); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(context.Context) *model.Health); ok {
+		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*model.Health)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
 	} else {
 		r1 = ret.Error(1)
 	}

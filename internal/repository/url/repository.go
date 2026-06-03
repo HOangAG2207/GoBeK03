@@ -9,9 +9,9 @@ import (
 
 //go:generate mockery --name UrlRepository --filename url_repository_mock.go --output ./mocks
 type UrlRepository interface {
-	StoreURL(ctx context.Context, code, url string) error
+	StoreURL(ctx context.Context, code, url string, exp int64) error
 	GetURL(ctx context.Context, code string) (string, error)
-	StoreURLIfAbsent(ctx context.Context, code, url string) (bool, error)
+	StoreURLIfAbsent(ctx context.Context, code, url string, exp int64) (bool, error)
 }
 type urlRepository struct {
 	redis   *redis.Client

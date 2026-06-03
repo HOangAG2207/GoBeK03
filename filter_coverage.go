@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"os"
 	"regexp"
+	"strings"
 )
 
 func main() {
@@ -13,7 +14,18 @@ func main() {
 	out, _ := os.Create("coverage.out")
 	defer out.Close()
 
-	re := regexp.MustCompile(`mocks|main.go|api.go|config.go|test|_coverage.go|docs`)
+	var ignoreList = []string{
+		"mocks",
+		"pkg",
+		"utils",
+		"main\\.go",
+		"api\\.go",
+		"config\\.go",
+		"test",
+		"_coverage\\.go",
+		"docs",
+	}
+	re := regexp.MustCompile(strings.Join(ignoreList, "|"))
 
 	scanner := bufio.NewScanner(in)
 	for scanner.Scan() {
