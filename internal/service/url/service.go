@@ -12,15 +12,14 @@ const (
 	maxRetryAttempts     = 10
 )
 
-var (
-	ErrCodeNotFound       = errors.New("shortened URL not found")
-	ErrMaxRetriesExceeded = errors.New("maximum retry attempts exceeded for generating unique URL code")
-)
+var ErrCodeNotFound = errors.New("URL not found")
+var ErrMaxRetriesExceeded = errors.New("maximum retry attempts exceeded for generating unique URL code")
 
 //go:generate mockery --name UrlService --filename url_service_mock.go --output ./mocks
 
 type UrlService interface {
 	ShortenURL(ctx context.Context, url string, exp int64) (string, error)
+	GetURL(ctx context.Context, code string) (string, error)
 }
 type urlService struct {
 	repo          url.UrlRepository

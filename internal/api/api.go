@@ -56,7 +56,7 @@ func NewEngine(opts *EngineOpts) Engine {
 	}))
 
 	// Log request HTTP (method, path, status, latency,...)
-	e.app.Use(middleware.RequestLogger())
+	// e.app.Use(middleware.RequestLogger())
 
 	// Recover: bắt panic để tránh crash server
 	e.app.Use(middleware.Recover())
@@ -88,13 +88,13 @@ func (e *engine) InitRoutes() {
 	// ===== SHORTEN URL =====
 
 	// Repository dùng Redis để lưu URL
-	shortenUrlRepo := urlRepo.NewUrlRepository(e.redisClient, 0)
+	UrlRepo := urlRepo.NewUrlRepository(e.redisClient, 0)
 
 	// Service xử lý logic rút gọn URL
-	shortenUrlService := urlService.NewUrlService(shortenUrlRepo, 0)
+	UrlService := urlService.NewUrlService(UrlRepo, 0)
 
 	// Handler nhận request HTTP
-	shortenUrlHandler := urlHandler.NewUrlHandler(shortenUrlService)
+	UrlHandler := urlHandler.NewUrlHandler(UrlService)
 
 	// ===== ROUTES =====
 	// Redirect từ "/" sang Swagger docs
@@ -111,7 +111,10 @@ func (e *engine) InitRoutes() {
 	apiGroup.GET("/health-check", checkHealthHandler.CheckHealth)
 
 	// API rút gọn URL
-	apiGroup.POST("/links/shorten", shortenUrlHandler.ShortenURL)
+	apiGroup.POST("/links/shorten", UrlHandler.ShortenURL)
+
+	// Redirect URL (dynamic route)
+	apiGroup.GET("/links/redirect/:code", UrlHandler.RedirectURL)
 
 }
 

@@ -8,7 +8,7 @@ import (
 )
 
 type shortenURLRequest struct {
-	URL string `json:"url" validate:"required,url" example:"https://www.google.com"`
+	URL string `json:"url" example:"http://localhost:8080/v1/docs/index.html"`
 	Exp int64  `json:"exp" example:"604800"` // thời gian hết hạn (giây)
 }
 
@@ -20,7 +20,7 @@ type shortenURLResponse struct {
 // ShortenURL godoc
 // @Summary      Shorten a URL
 // @Description  Generate a shortened URL code from a given URL with optional expiration time
-// @Tags         url
+// @Tags         links
 // @Accept       json
 // @Produce      json
 // @Param        request  body      shortenURLRequest  true  "URL to shorten with expiration time (exp in seconds)"

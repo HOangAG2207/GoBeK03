@@ -44,6 +44,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/links/redirect/{code}": {
+            "get": {
+                "description": "Redirect to original URL by short code",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "links"
+                ],
+                "summary": "Redirect short URL",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Short URL code",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": "Redirect to original URL",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request (invalid code or not found)",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v1/links/shorten": {
             "post": {
                 "description": "Generate a shortened URL code from a given URL with optional expiration time",
@@ -54,7 +104,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "url"
+                    "links"
                 ],
                 "summary": "Shorten a URL",
                 "parameters": [
@@ -111,9 +161,6 @@ const docTemplate = `{
         },
         "url.shortenURLRequest": {
             "type": "object",
-            "required": [
-                "url"
-            ],
             "properties": {
                 "exp": {
                     "description": "thời gian hết hạn (giây)",
@@ -122,7 +169,7 @@ const docTemplate = `{
                 },
                 "url": {
                     "type": "string",
-                    "example": "https://www.google.com"
+                    "example": "http://localhost:8080/v1/docs/index.html"
                 }
             }
         },

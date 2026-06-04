@@ -21,10 +21,8 @@ definitions:
         example: 604800
         type: integer
       url:
-        example: https://www.google.com
+        example: http://localhost:8080/v1/docs/index.html
         type: string
-    required:
-    - url
     type: object
   url.shortenURLResponse:
     properties:
@@ -59,6 +57,39 @@ paths:
       summary: Check health
       tags:
       - health
+  /v1/links/redirect/{code}:
+    get:
+      consumes:
+      - application/json
+      description: Redirect to original URL by short code
+      parameters:
+      - description: Short URL code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "302":
+          description: Redirect to original URL
+          schema:
+            type: string
+        "400":
+          description: Bad request (invalid code or not found)
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Redirect short URL
+      tags:
+      - links
   /v1/links/shorten:
     post:
       consumes:
@@ -89,5 +120,5 @@ paths:
             $ref: '#/definitions/url.shortenURLResponse'
       summary: Shorten a URL
       tags:
-      - url
+      - links
 swagger: "2.0"

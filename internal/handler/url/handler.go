@@ -8,13 +8,14 @@ import (
 )
 
 var (
-	ErrCodeNotFound       = errors.New("code not found")
+	// ErrCodeNotFound       = errors.New("code not found")
 	InValidRequestPayload = errors.New("invalid request payload")
 	InternalServerError   = errors.New("internal server error")
 )
 
 type UrlHandler interface {
 	ShortenURL(ctx echo.Context) error
+	RedirectURL(ctx echo.Context) error
 }
 type urlHandler struct {
 	service url.UrlService
