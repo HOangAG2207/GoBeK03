@@ -21,10 +21,8 @@ definitions:
         example: 604800
         type: integer
       url:
-        example: https://www.google.com
+        example: http://localhost:8080/v1/docs/index.html
         type: string
-    required:
-    - url
     type: object
   url.shortenURLResponse:
     properties:

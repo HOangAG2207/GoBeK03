@@ -161,9 +161,6 @@ const docTemplate = `{
         },
         "url.shortenURLRequest": {
             "type": "object",
-            "required": [
-                "url"
-            ],
             "properties": {
                 "exp": {
                     "description": "thời gian hết hạn (giây)",
@@ -172,7 +169,7 @@ const docTemplate = `{
                 },
                 "url": {
                     "type": "string",
-                    "example": "https://www.google.com"
+                    "example": "http://localhost:8080/v1/docs/index.html"
                 }
             }
         },

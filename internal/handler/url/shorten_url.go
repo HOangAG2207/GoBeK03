@@ -8,7 +8,7 @@ import (
 )
 
 type shortenURLRequest struct {
-	URL string `json:"url" validate:"required,url" example:"https://www.google.com"`
+	URL string `json:"url" example:"http://localhost:8080/v1/docs/index.html"`
 	Exp int64  `json:"exp" example:"604800"` // thời gian hết hạn (giây)
 }
 

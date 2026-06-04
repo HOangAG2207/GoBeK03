@@ -56,7 +56,7 @@ func NewEngine(opts *EngineOpts) Engine {
 	}))
 
 	// Log request HTTP (method, path, status, latency,...)
-	e.app.Use(middleware.RequestLogger())
+	// e.app.Use(middleware.RequestLogger())
 
 	// Recover: bắt panic để tránh crash server
 	e.app.Use(middleware.Recover())
